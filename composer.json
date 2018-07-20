@@ -14,7 +14,7 @@
     	"source" : "https://github.com/keenlysoft/database"
   	},
   	"replace": {
-    	"twitter/bootstrap": "self.version"
+    	"keenlysoft/database": "self.version"
   	},
     "autoload": {
         "psr-4": {
