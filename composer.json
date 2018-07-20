@@ -1,0 +1,12 @@
+{
+    "name": "keenlysoft/database",
+    "description": "database is keen Framework core file",
+    "require": {
+        "php": "^5.3.3 || ^7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "database\\": ""
+        }
+    }
+}
