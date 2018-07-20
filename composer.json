@@ -14,9 +14,6 @@
     "support" : {
     	"source" : "https://github.com/keenlysoft/database"
   	},
-  	"replace": {
-    	"keenlysoft/database": "self.version"
-  	},
     "autoload": {
         "psr-4": {
             "database\\": ""
