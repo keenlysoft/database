@@ -16,5 +16,7 @@
         "psr-4": {
             "database\\": ""
         }
-    }
+    },
+	"type": "composer",
+	"url": "http://packagist.phpcomposer.com"
 }
