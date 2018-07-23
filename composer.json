@@ -6,7 +6,6 @@
         "email": "463247339@qq.com"
     }],
     "license" : "MIT",
-    "type": "project",
     "keywords" : [ "keenly", "keenly database" ],
     "require": {
         "php": "^5.3.3 || ^7.0"
