@@ -2,10 +2,10 @@
 # 查找
 ##### 一个简单的查找
 ```php
-model::find(['id'=>100])->where(['name'=>'keenly'])->one(); #获取一条数据
+model::find(['id'])->where(['name'=>'keenly'])->one(); #获取一条数据
 ```
 ```php
-model::find(['id'=>100])->where(['name'=>'keenly'])->all(); #获取多条数据
+model::find(['id'])->where(['name'=>'keenly'])->all(); #获取多条数据
 ```
 keenly database 返回结果集以数组方式返回
 ##### 介绍条件语句
@@ -15,4 +15,50 @@ keenly database 返回结果集以数组方式返回
 | pwhere|pwhere(['id'=>'100','name'=>'ssc']) |参数1：数组|
 |pwhere|pwhere('<',['id'=>'100','name'=>'ssc'])|参数1：运算符，参数2：数组|
 |pwhere|pwhere(">",['id'=>'100','name'=>'ssc'],'and')|参数1：运算符，参数2：数组,参数3：and or |
-|likeWhere|likewhere('field','name',a)|left = l , right = r , all = a|
+|likeWhere|likewhere('field','name','a')|left = l , right = r , all = a|
+# 更新
+```php
+$user = new user();
+$user->Update($data,$where,flase); #更新数据 
+```
+| 参数1  |参数2   |参数3|
+| ------------ | ------------ | ------------ |
+|更新值   | 条件语句 |如果是true 表示预处理语句更新 false 非预处理语句更新数据|
+
+```php
+#使用主键值更新
+$user = new user($id);
+$user->name = 'jack_yang';
+$user->save();
+```
+# 添加
+```php
+$user = new user();
+$user->add($data); #添加数据 
+```
+| 参数1 
+| ------------ |
+|['name'=>'yang','age'=>18| 
+
+```php
+#使用AR添加
+$user = new user();
+$user->name = 'jack_yang';
+$user->save();
+```
+#求总数
+```php
+model::find('id')->where(['name'=>'keenly'])->count(); # 返回结果 int 整数
+```
+#判断是否存在
+```php
+model::find('id')->where(['name'=>'keenly'])->exist(); #返回结果 bool
+```
+#判断是否存在
+```php
+model::find('id')->where(['name'=>'keenly'])->exist(); #返回结果 bool
+```
+#返回 top 10 
+```php
+model::find('id')->where(['name'=>'keenly'])->top(10); #返回数组 
+```
