@@ -1,21 +1,25 @@
 {
-    "name": "keenlysoft/database",
-    "description": "database is keen Framework core file",
-    "authors": [{
-        "name": "brain_yang",
-        "email": "463247339@qq.com"
-    }],
-    "license" : "MIT",
-    "keywords" : [ "keenly", "keenly database" ],
-    "require": {
-        "php": "^5.3.3 || ^7.0"
-    },
-    "support" : {
-    	"source" : "https://github.com/keenlysoft/database"
-  	},
-    "autoload": {
-        "psr-4": {
-            "database\\": ""
-        }
-    }
+	"name" : "keenlysoft/database",
+	"description" : "database is keen Framework core file",
+	"authors" : [{
+			"name" : "brain_yang",
+			"email" : "qiaopi520@qq.com"
+		}
+	],
+	"license" : "MIT",
+	"prefer-stable" : true,
+	"minimum-stability" : "dev",
+	"keywords" : [
+		"keenly",
+		"keenly database"
+	],
+	"require" : {
+		"php" : "^5.3.3 || ^7.0"
+	},
+	"support" : {
+		"source" : "https://github.com/keenlysoft/database"
+	},
+	"config" : {
+		"notify-on-install" : false
+	}
 }
