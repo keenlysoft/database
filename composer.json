@@ -3,7 +3,7 @@
 	"description" : "database is keen Framework core file",
 	"authors" : [{
 			"name" : "brain_yang",
-			"email" : "qiaopi520@qq.com"
+			"email" : "463247339@qq.com"
 		}
 	],
 	"license" : "MIT",
@@ -14,12 +14,16 @@
 		"keenly database"
 	],
 	"require" : {
-		"php" : "^5.3.3 || ^7.0"
+		"php" : "^7.0"
 	},
+	"autoload" : {
+		"psr-4" : {
+			"database\\" : ""
+		}
+	},
+	"type" : "composer",
+	"url" : "http://packagist.phpcomposer.com",
 	"support" : {
-		"source" : "https://github.com/keenlysoft/database"
-	},
-	"config" : {
-		"notify-on-install" : false
+		"email" : "qiaopi520@qq.com"
 	}
 }
