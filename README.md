@@ -26,7 +26,7 @@ $user->Update($data,$where,flase); #更新数据
 |更新值   | 条件语句 |如果是true 表示预处理语句更新 false 非预处理语句更新数据|
 
 ```php
-#使用主键值更新
+# 使用主键值更新
 $user = new user($id);
 $user->name = 'jack_yang';
 $user->save();
@@ -46,19 +46,46 @@ $user = new user();
 $user->name = 'jack_yang';
 $user->save();
 ```
-#求总数
+# 求总数
 ```php
 model::find('id')->where(['name'=>'keenly'])->count(); # 返回结果 int 整数
 ```
-#判断是否存在
+# 判断是否存在
 ```php
 model::find('id')->where(['name'=>'keenly'])->exist(); #返回结果 bool
 ```
-#判断是否存在
+# 判断是否存在
 ```php
 model::find('id')->where(['name'=>'keenly'])->exist(); #返回结果 bool
 ```
-#返回 top 10 
+# 返回 top 10
 ```php
 model::find('id')->where(['name'=>'keenly'])->top(10); #返回数组 
+```
+# 计数器
+```php
+user::UpdateCounter(['name'=>2],['id'=>2]); ##参数1 字段=>2 or -2 参数2：where 语句
+```
+# 事务
+### 开启事务
+```
+$user = new user;
+$user->begin();
+
+```
+### 检查是否在一个事务内
+```
+$user = new user;
+$user->InTransaction();
+
+```
+### 提交事务
+```
+$user = new user;
+$user->commit();
+```
+### 回滚事务
+```
+$user = new user;
+$user->back();
 ```
