@@ -10,10 +10,12 @@ namespace database;
  * For the full copyright and license information, please view the LICENSE
  */
 use keenly\config;
+use keenly\base\Singleton;
 
 
 class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
     
+    use Singleton;
     
     public $_params;
     
@@ -56,7 +58,7 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
      * @ $boole  
      */
     public static  function find(){
-       $self = new self();
+       $self = self::I();
        $self->child  =  self::lectionClass(get_called_class());
        $self->find = true;
        $self->BindSelect();
