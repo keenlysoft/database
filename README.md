@@ -66,3 +66,26 @@ model::find('id')->where(['name'=>'keenly'])->top(10); #返回数组
 ```php
 user::UpdateCounter(['name'=>2],['id'=>2]); ##参数1 字段=>2 or -2 参数2：where 语句
 ```
+# 事务
+### 开启事务
+```
+$user = new user;
+$user->begin();
+
+```
+### 检查是否在一个事务内
+```
+$user = new user;
+$user->InTransaction();
+
+```
+### 提交事务
+```
+$user = new user;
+$user->commit();
+```
+### 回滚事务
+```
+$user = new user;
+$user->back();
+```
