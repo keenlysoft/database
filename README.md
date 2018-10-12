@@ -48,7 +48,7 @@ $user->save();
 ```
 # 返回SQL
 ```php
-model::find(['id'])->where(['name'=>'keenly'])->all(false) ## all()或者 one()参数为FALSE
+model::find(['id'])->where(['name'=>'keenly'])->all(false) #all()或者 one()参数为FALSE
 ```
 
 # 求总数
