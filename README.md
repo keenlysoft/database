@@ -46,6 +46,11 @@ $user = new user();
 $user->name = 'jack_yang';
 $user->save();
 ```
+# 返回SQL
+```php
+model::find(['id'])->where(['name'=>'keenly'])->all(false) #all()或者 one()参数为FALSE
+```
+
 # 求总数
 ```php
 model::find('id')->where(['name'=>'keenly'])->count(); # 返回结果 int 整数
