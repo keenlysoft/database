@@ -71,6 +71,13 @@ model::find('id')->where(['name'=>'keenly'])->top(10); #返回数组
 ```php
 user::UpdateCounter(['name'=>2],['id'=>2]); ##参数1 字段=>2 or -2 参数2：where 语句
 ```
+# 切换数据库
+```php
+User::SwitchDB('test'); # test 是database 配置里面连接的数据库名称
+$user = User::find()->where([])->all();
+User::InitDB();
+```
+
 # 事务
 ### 开启事务
 ```
