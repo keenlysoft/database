@@ -3,6 +3,7 @@ namespace database;
 
 
 use keenly\Exception\dbException;
+use database\mysql\pdoBuilder;
 
 class base  extends abstractPdo {
     
@@ -20,16 +21,16 @@ class base  extends abstractPdo {
     protected    $ilink = false;
     
     
-    public function __construct($adodb = null){
+    public function __construct($adodb = null,$initdb = FALSE){
         $this->adodb = is_string($adodb)?$adodb:false;
-        $this->dh = $this->init();
+        $this->dh = $this->init($initdb);
     }
     
     
     
-    public function init(){
+    public function init($initdb = FALSE){
         return method_exists($this->database,$this->connection)?
-        call_user_func_array(array($this->database,$this->connection),[$this->adodb]):
+        call_user_func_array(array($this->database,$this->connection),[$this->adodb,$initdb]):
         '';
     }
     

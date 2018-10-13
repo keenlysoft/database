@@ -4,6 +4,7 @@ namespace database\mysql;
 use keenly\config;
 use keenly\Exception\dbException;
 use keenly\common;
+use keenly\exception\KeenlyException;
 
 
 
@@ -44,7 +45,10 @@ class pdoBuilder{
     
     
     
-    public static  function connectionSql($dbName = null){
+    public static  function connectionSql($dbName = null,$reboot = FALSE){
+       if($reboot){
+           self::$instance = false;
+       }
        if(!self::$instance instanceof self){
            self::$instance = new static($dbName); 
        }
@@ -54,12 +58,9 @@ class pdoBuilder{
     
     
     
-    private function setDB($dbName = null){
-       
-       if(isset($dbName) && !empty($dbName) && !array_key_exists($dbName, $this->connectStr)){
-           
-            throw new dbException('Database does not exist');
-            
+    private function setDB($dbName = null,$init = FALSE){
+       if(isset($dbName) && !empty($dbName) && !array_key_exists($dbName, $this->connectStr)){  
+            throw new KeenlyException('Database does not exist');
        }else{
            $db = $this->connectStr[empty($dbName)?self::$databaseName:$dbName];
        }
@@ -129,10 +130,14 @@ class pdoBuilder{
     
     
     private function like(){
+        if(isset($this->dbh) && !empty($this->dbh)){
+            return $this->dbh;
+        }
         try {
             $this->dbh = new \PDO($this->dns,$this->db['username'],$this->db['password'],[\PDO::ATTR_PERSISTENT => $this->mysql['persistenet']]);
             $this->dbh->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
             unset($this->connectStr,$this->config,$this->dns,$this->mysql['clusters']);
+            
             return $this->dbh;
         }catch (\PDOException $e){
             die ("Error!:Unable to connect " . $e->getMessage() . "<br/>");

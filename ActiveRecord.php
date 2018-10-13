@@ -23,7 +23,11 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
     
     protected $select;
     
-    private  $base = 'database\base';
+    private static $initDB = FALSE;
+    
+    private static $base = 'database\base';
+    
+    private static $SetDB = null;
     
     private $_sqlAR = [];
     
@@ -48,7 +52,7 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
     private $find = FALSE;
     
     private $sqlstr;
-    
+
     
     /**
      * 
@@ -76,13 +80,37 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
     
     
     private function setDB(){
-        $mysql = config::reload('database')->Get('mysql',"separation");
-        if($mysql){
-          $database = $this->find?'vice-':'master';
-        }else{
-          $database = 'master';
+        if($this->DbInstanceExist()){
+            return $this;
         }
-        $this->dbh = self::lectionClass($this->base,$database);
+        $mysql = config::reload('database')->Get('mysql',"separation");
+        if($mysql && !self::$SetDB){
+            self::$SetDB = $this->find?'vice-':'master';
+        }elseif(!self::$SetDB){
+            self::$SetDB = 'master';
+        }
+        if(!isset($this->dbh) && empty($this->dbh)){
+            if(self::$initDB){
+                $this->dbh = self::lectionClass(self::$base,self::$SetDB,self::$initDB);
+            }else{
+                $this->dbh = self::lectionClass(self::$base,self::$SetDB);
+            }
+        }
+        return $this;
+    }
+    
+
+    
+    //切换数据库
+    public static function SwitchDB($database){
+        return self::$SetDB = $database;
+    }
+    
+    //初始化
+    public static function InitDB(){
+        self::$Switch = self::$SetDB  = null;
+        self::$initDB = true;
+        
     }
     
     
@@ -351,6 +379,7 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
         }
         $bind = $this->bindSql();
         if(!$param) return $this->PrintSQL();
+        $this->initialize();
         return  $bind->all();
     }
     
@@ -372,6 +401,7 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
         }
         $bind = $this->bindSql();
         if(!$param) return $this->PrintSQL();
+        $this->initialize();
         return $bind->one();
     }
     
@@ -391,9 +421,9 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
                $phl->bindValue("$filed",$name);
            }
            $phl->execute();
-           //$this->initialize();
            return  $phl;
        }else{
+           $this->initialize();
            return $this->query($sql);
        }
       
@@ -406,9 +436,10 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
     }
    
     
-    public static function lectionClass($class,$classargs = null){
+    public static function lectionClass($class,$classargs = null,$initdb = false){
+       if (empty($class)) return false;
        $class = new \ReflectionClass($class);
-       $args = empty($classargs)?$class->newInstanceArgs():$class->newInstanceArgs([$classargs]);
+       $args = empty($classargs)?$class->newInstanceArgs():$class->newInstanceArgs([$classargs,$initdb]);
        return $args;
     }
     
@@ -457,12 +488,14 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
    
     //初始化
     private function initialize(){
+        $this->_sqlAR['select'] = [];
         $this->sqlval= [];
         $this->arWhere = '';
         $this->pWhere = '';
         $this->_pval = '';
         $this->_pstr = '';
         $this->_ar = '';
+        $this->select = '';
     }
     
     
@@ -494,15 +527,32 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
     
     
     public function __call($func,$args){
-        if(!$this->dbh){
+        if(!$this->DbInstanceExist()){
             $this->setDB();
         }
         return call_user_func_array(array(&$this->dbh, $func), $args);
     }
     
     
+    
+    
+    
     public function close(){
         return $this->dbh->closeCursor();
+    }
+    
+    
+    /**
+     * @name 判断实例是否存在
+     * @return boolean
+     */
+    function DbInstanceExist(){
+       if(self::$initDB){
+           $this->dbh = null;
+       }
+       return isset($this->dbh) && !empty($this->dbh)?
+       true:
+       false;
     }
     
     

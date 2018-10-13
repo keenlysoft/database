@@ -11,6 +11,8 @@ namespace database;
 class BaseActiveRecord {
     
     
+    public static $Switch;
+    
     private   $_paramssql;
     
     private   $intStr;
