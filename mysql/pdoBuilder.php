@@ -5,7 +5,7 @@ use keenly\config;
 use keenly\Exception\dbException;
 use keenly\common;
 use keenly\exception\KeenlyException;
-
+define('ISCLI', PHP_SAPI === 'cli');
 
 
 
@@ -24,6 +24,8 @@ class pdoBuilder{
     
     private static  $instance = [];
     
+    private static $tempLike;
+    
     private $config;
     
     private $dns;
@@ -35,7 +37,8 @@ class pdoBuilder{
     private $setDB;
     
     protected  function __construct($dbName = null){
-      return $this->GetConfig()->parseConfig()->setDB($dbName)->like();
+   
+            return $this->GetConfig()->parseConfig()->setDB($dbName)->like();
     }
     
     
@@ -46,7 +49,10 @@ class pdoBuilder{
     
     
     public static  function connectionSql($dbName = null,$reboot = FALSE){
-       if($reboot){
+        if($reboot){
+           self::$instance = false;
+       }
+       if(ISCLI && self::$tempLike && !self::pdo_ping(self::$tempLike)){
            self::$instance = false;
        }
        if(!self::$instance instanceof self){
@@ -69,6 +75,9 @@ class pdoBuilder{
        parse_str($data,$this->db);
        return $this;
     }
+    
+    
+    
     
     private function GetConfig(){
         $database = config::reload('database');
@@ -134,7 +143,7 @@ class pdoBuilder{
             return $this->dbh;
         }
         try {
-            $this->dbh = new \PDO($this->dns,$this->db['username'],$this->db['password'],[\PDO::ATTR_PERSISTENT => $this->mysql['persistenet']]);
+            $this->dbh = self::$tempLike = new \PDO($this->dns,$this->db['username'],$this->db['password'],[\PDO::ATTR_PERSISTENT => $this->mysql['persistenet']]);
             $this->dbh->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
             unset($this->connectStr,$this->config,$this->dns,$this->mysql['clusters']);
             
@@ -143,6 +152,18 @@ class pdoBuilder{
             die ("Error!:Unable to connect " . $e->getMessage() . "<br/>");
         }
     }                                                        
+
+   static function pdo_ping($dbh){
+        try{
+            $dbh->getAttribute(\PDO::ATTR_SERVER_INFO);
+        }catch(\PDOException $e){
+            if(strpos($e->getMessage(), 'MySQL server has gone away') !== false){
+                return false; 
+            }
+        }
+        return true; 
+    }
+
     
     
     public function __call($func,$args){
