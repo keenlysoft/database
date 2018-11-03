@@ -20,7 +20,7 @@ abstract class abstractPdo{
     abstract function exce($sql);
     
     
-    abstract function  query($sql);
+    abstract function query($sql);
     
     
     abstract function commit();

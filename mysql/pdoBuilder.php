@@ -153,7 +153,7 @@ class pdoBuilder{
         }
     }                                                        
 
-   static function pdo_ping($dbh){
+    private static function pdo_ping($dbh){
         try{
             $dbh->getAttribute(\PDO::ATTR_SERVER_INFO);
         }catch(\PDOException $e){
