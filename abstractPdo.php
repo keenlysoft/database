@@ -31,6 +31,6 @@ abstract class abstractPdo{
     
     abstract function begin();
     
-
+    
     
 }

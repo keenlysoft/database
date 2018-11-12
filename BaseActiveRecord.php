@@ -25,6 +25,10 @@ class BaseActiveRecord {
     
     private   $setSql = ' SET ';
     
+    public static function className()
+    {
+        return get_called_class();
+    }
     
     private function Inseter($Table){
         $this->_paramssql = "insert into ".$Table.' ';
@@ -137,6 +141,11 @@ class BaseActiveRecord {
     public function judgeCount( $num , $seg = ' , '){
         return count($num) > 1 ? $seg : '';
     }
+    
+    
+    
+    
+    
     
     
     
