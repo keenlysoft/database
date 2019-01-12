@@ -33,7 +33,10 @@ class models extends ActiveRecord implements \ArrayAccess{
     
     
     public function __get($key){
-        return $this->_ar[$key];
+        if(isset($this->_ar[$key]))
+        {
+            return $this->_ar[$key];
+        }
     }
     
     

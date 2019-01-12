@@ -10,6 +10,6 @@ interface  ActiveRecordInterface{
     
     public function pwhere();
     
-    public function limit();
+    public function limit($m , $n);
     
 }

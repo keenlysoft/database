@@ -101,7 +101,7 @@ class pdoBuilder{
     private function dnsStructure($array){
         
         $dns = $array['driver'].':host='.$array['host'].';dbname='.$array['dbname'].';charset='.$array['charset'];
-        unset($array['driver'],$array['host'],$array['dbname']);
+        unset($array['driver'],$array['host']);
         
         return $dns.DIRECTORY_SEPARATOR.http_build_query($array);
     }

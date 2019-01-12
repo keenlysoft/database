@@ -19,6 +19,8 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
     
     public $_params;
     
+    public $pagination;
+    
     protected  $dbh;
     
     protected $select;
@@ -188,11 +190,11 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
         $this->find = true;
         switch ($around){
             case 'a':
-                $this->arWhere .= " `$field` lik(%$key%)"; break; 
+                $this->arWhere .= " `$field` like('%$key%')"; break;
             case 'r':
-                $this->arWhere .= " `$field` lik(%$key)"; break; 
+                $this->arWhere .= " `$field` like('%$key')"; break;
             case 'l':
-                $this->arWhere .= " `$field` lik($key%)"; break; 
+                $this->arWhere .= " `$field` like('$key%')"; break;
         }
         return $this;
     }
@@ -203,7 +205,21 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
      * @param offset $n
      */
     public function limit($m , $n = 0){
-        $this->arWhere .= " limit $m,$n";
+        if($n == 0){
+            $this->arWhere .= " limit $m";
+        }else {
+            $this->arWhere .= " limit $m,$n";
+        }
+        return $this;
+    }
+    
+    /**
+     * @name offset
+     * @param 开始数字 $m
+     * @param offset $n
+     */
+    public function offset($n){
+        $this->arWhere .= " offset $n";
         return $this;
     }
     
@@ -454,8 +470,9 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
     */
    
    public function Count($param = '*'){
-       $this->resetSelet("count($param)")->disposeSelectSQL();
-       return (int) $this->bindSql()->all()['0']["count($param)"];
+       $select = "select count($param)".$this->ProcessingTable();
+       $sql = $this->StringSql($select);
+       return (int) $this->query($sql)->one()["count($param)"];
    }
    
    /**
@@ -466,6 +483,7 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
       $sql = $this->StringSql();
       $existsSql = "exists (".$sql.")";
       $select = 'select '.$existsSql;
+      $this->initialize();
       return (bool) $this->query($select)->one()[$existsSql];
   }
    
@@ -476,6 +494,7 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
    
    public function top($param){
        $this->resetSelet("top $param")->disposeSelectSQL();
+       $this->initialize();
        return $this->bindSql()->all();
    }
    
@@ -515,12 +534,16 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
     }
      
     
-    private function StringSql(){
-       if($this->isPretreatment){
-           return $this->select.' WHERE '.$this->arWhere.(!empty($this->arWhere)?' AND ':'').$this->_pstr;
-       }else{
-           return $this->select.(empty($this->arWhere)?'':' WHERE ').$this->arWhere;
-       }
+    private function StringSql($select = null){
+        if($this->isPretreatment){
+            return (isset($select)?$select:$this->select).' WHERE '.$this->arWhere.(!empty($this->arWhere)?' AND ':'').$this->_pstr;
+        }else{
+            if(isset($select)){
+                return $select.(empty($this->arWhere)?'':' WHERE ').$this->arWhere;
+            }else{
+                return $this->select.(empty($this->arWhere)?'':' WHERE ').$this->arWhere;
+            }
+        }
     }
     
     
@@ -532,9 +555,6 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
         }
         return call_user_func_array(array(&$this->dbh, $func), $args);
     }
-    
-    
-    
     
     
     public function close(){
@@ -555,7 +575,34 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
        false;
     }
     
+    /**
+     * @name 执行 update delete
+     * @param sql 
+     * @author: brain
+     * @time 2019年1月8日 下午2:27:06
+     */
     
+    public function exec($sql){
+        if(!$this->dbh){
+            $this->setDB();
+        }
+        return $this->dbh->exec($sql);
+    }
+    
+    /**
+     * @name 执行 select
+     * @param sql
+     * @author: brain
+     * @time 2019年1月8日 下午2:27:06
+     */
+    
+    public function query($sql){
+        if(!$this->dbh){
+            $this->setDB();
+        }
+        return $this->dbh->query($sql);
+    }
+   
 }
 
     
