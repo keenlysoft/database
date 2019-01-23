@@ -46,6 +46,14 @@ $user = new user();
 $user->name = 'jack_yang';
 $user->save();
 ```
+# 删除
+```
+#删除条件以数组方式或字符串方式传参
+$user = new User();
+$user->Delete(['id'=>1,'name'=>'ccc']); 
+```
+
+
 # 返回SQL
 ```php
 model::find(['id'])->where(['name'=>'keenly'])->all(false) #all()或者 one()参数为FALSE
