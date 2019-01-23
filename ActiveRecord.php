@@ -276,7 +276,7 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
             $Prepare  = '';
             $prepareArray = [];
             foreach ($params as $field => $pval){
-                if($pval ==  end($params)){
+                if($this->endkey($params) == $field){
                     $Prepare .= $field .' '. $operator .' :'.$field;
                 }else{
                     $Prepare .= $field .' '. $operator .' :'.$field.$this->judgeCount($params," $bit ");
@@ -349,28 +349,35 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
     
     
     
-     //
-     private function disposeWhereParams($params,$operator = ' = ',$bit = ' AND '){
-         $this->find = true;
-         if(!$this->dbh){
-                $this->setDB();
-                $this->disposeSelectSQL();
-            }
-            $sql = '';
-            if(is_array($params)){
-                foreach ($params as $name => $value){
-                    if($value ==  end($params)){
-                        $sql .= '`'.$name."` {$operator} ".$this->dbh->quote($value);
-                    }else{
-                        $sql .= '`'.$name."` {$operator} ".$this->dbh->quote($value).$this->judgeCount($params," $bit ");
-                    }
-                 }
-                 $this->arWhere .= empty($this->arWhere)?$sql:$bit.$sql;
-            }else{
-                 $this->arWhere .= empty($this->arWhere)?$params:$bit.$params;
-            }
-            return $this;
+    private function disposeWhereParams($params,$operator = ' = ',$bit = ' AND '){
+        $this->find = true;
+        if(!$this->dbh){
+            $this->setDB();
+            $this->disposeSelectSQL();
         }
+        $sql = '';
+        if(is_array($params)){
+            foreach ($params as $name => $value){
+                if($this->endkey($params) == $name){
+                    $sql .= '`'.$name."` {$operator} ".$this->dbh->quote($value);
+                }else{
+                    $sql .= '`'.$name."` {$operator} ".$this->dbh->quote($value).$this->judgeCount($params," $bit ");
+                }
+            }
+            $this->arWhere .= empty($this->arWhere)?$sql:$bit.$sql;
+        }else{
+            $this->arWhere .= empty($this->arWhere)?$params:$bit.$params;
+        }
+        return $this;
+    }
+    
+    
+    
+    
+    private function endkey($array){
+        end($array);
+        return key($array);
+    }
     
     
         
