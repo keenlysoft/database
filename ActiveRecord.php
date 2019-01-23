@@ -327,6 +327,12 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
     }
     
     
+    public function Delete($where){
+        
+       return $this->DeleteExec($where);
+        
+    }
+    
     
     //prepared Update func
     private function preparedUpdate($data,$where){
@@ -344,9 +350,14 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
     private function NotPreparedUpdate($data,$where){
         $sqldata = empty($data)?$this->_ar:$data;
         $sql = $this->dealUpdateSQL($this->GetTable(),$sqldata,$where,false);
-        return $this->dbh->exec($sql);
+        return $this->exec($sql);
     }
     
+    //EXEC DELETE
+    private function DeleteExec($where){
+        $sql = $this->dealDeleteSQL($this->GetTable(), $where);
+        return $this->exec($sql);
+    }
     
     
     private function disposeWhereParams($params,$operator = ' = ',$bit = ' AND '){
@@ -370,18 +381,6 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
         }
         return $this;
     }
-    
-    
-    
-    
-    private function endkey($array){
-        end($array);
-        return key($array);
-    }
-    
-    
-        
-
     
     
     /**
@@ -573,7 +572,7 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
      * @name 判断实例是否存在
      * @return boolean
      */
-    function DbInstanceExist(){
+   protected function DbInstanceExist(){
        if(self::$initDB){
            $this->dbh = null;
        }
@@ -593,6 +592,7 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
         if(!$this->dbh){
             $this->setDB();
         }
+        $this->sqlstr = $sql;
         return $this->dbh->exec($sql);
     }
     
@@ -607,6 +607,7 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
         if(!$this->dbh){
             $this->setDB();
         }
+        $this->sqlstr = $sql;
         return $this->dbh->query($sql);
     }
    

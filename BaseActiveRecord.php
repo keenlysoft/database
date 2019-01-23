@@ -23,6 +23,8 @@ class BaseActiveRecord {
     
     private   $upSql;
     
+    private   $delete;
+    
     private   $setSql = ' SET ';
     
     public static function className()
@@ -38,6 +40,11 @@ class BaseActiveRecord {
     
     private function Updatesql($Table){
         $this->upSql = "UPDATE ".$Table.' ';
+        return $this;
+    }
+    
+    private function delete($Table){
+        $this->delete = "DELETE FROM ".$Table.' ';
         return $this;
     }
     
@@ -94,13 +101,22 @@ class BaseActiveRecord {
      * @param unknown $a
      * @param string $w is wherw 
      */
-    public function dealUpdateSQL($t,$a,$w,$p = true){
+    protected function dealUpdateSQL($t,$a,$w,$p = true){
         $Usql = $this->Updatesql($t);
         $Usql = !$p?$Usql->desoUpdateSql($a):$Usql->desoUpSql($a);
         $Usql .= $this->BindWhere($w);
         return $Usql;
     }
     
+    
+    
+    
+    //deal delete sql function
+    protected function dealDeleteSQL($t,$w){
+        $this->delete($t);
+        $this->delete .= $this->BindWhere($w);
+        return $this->delete;
+    }
    
     
     //bind where
@@ -108,10 +124,10 @@ class BaseActiveRecord {
         if (isset($w) && is_array($w)){
             $where = '';
             foreach ($w as $f => $v){
-                if($v ==  end($w)){
-                    $where .= $f.' = '.$v;
+                if($this->endkey($w) == $f){
+                    $where .= "`$f`".' = '."'$v'";
                 }else{
-                    $where .= $f.' = '.$v.$this->judgeCount($w,' AND ');
+                    $where .= "`$f`".' = '."'$v'".$this->judgeCount($w,' AND ');
                 }
             }
             return ' WHERE '.$where;
@@ -119,12 +135,17 @@ class BaseActiveRecord {
            return ' WHERE '.$w;
     }
     
+    
+    private function endkey($array){
+        end($array);
+        return key($array);
+    }
     /**
      * @name deal insert sql
      * @param table $t
      * @param _ar $a
      */
-    public function dealInsertSQL($t,$a){
+    protected function dealInsertSQL($t,$a){
         $this->Inseter($t)->desoSql($a);
         $this->_paramssql .= "($this->intStr)".' value '."({$this->valueStr})";
         return $this->_paramssql;
@@ -138,7 +159,7 @@ class BaseActiveRecord {
      * @time 2018年2月27日
      * For the full copyright and license information, please view the LICENSE
      */
-    public function judgeCount( $num , $seg = ' , '){
+    protected function judgeCount( $num , $seg = ' , '){
         return count($num) > 1 ? $seg : '';
     }
     
