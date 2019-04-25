@@ -204,7 +204,8 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
      * @param 开始数字 $m
      * @param offset $n
      */
-    public function limit($m , $n = 0){
+    public function limit($m , $n = 0)
+    {
         if($n == 0){
             $this->arWhere .= " limit $m";
         }else {

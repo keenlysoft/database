@@ -136,7 +136,7 @@ class BaseActiveRecord {
     }
     
     
-    private function endkey($array){
+    protected function endkey($array){
         end($array);
         return key($array);
     }
