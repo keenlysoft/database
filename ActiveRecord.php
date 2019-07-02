@@ -55,7 +55,13 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
     
     private $sqlstr;
 
-    
+    public function init()
+    {
+        $this->select  = '';
+        $this->arWhere = '';
+        $this->pWhere  = '';
+        $this->sqlstr  = '';
+    }
     /**
      * 
      * model::find([])->where([])->one();
@@ -65,6 +71,7 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
      */
     public static  function find(){
        $self = self::I();
+       $self->init();
        $self->child  =  self::lectionClass(get_called_class());
        $self->find = true;
        $self->BindSelect();
@@ -187,6 +194,9 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface{
      * left = l || right = r || all = a
      */
     public function likeWhere($field,$key,$around = 'a'){
+        if($this->arWhere){
+            $this->arWhere = $this->arWhere.' and ';
+        }
         $this->find = true;
         switch ($around){
             case 'a':
