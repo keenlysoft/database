@@ -41,14 +41,14 @@ $user->add($data); #添加数据
 |['name'=>'yang','age'=>18| 
 
 ```php
-#使用AR添加
+#使用AR添加 预处理模式
 $user = new user();
 $user->name = 'jack_yang';
 $user->save();
 ```
 # 删除
 ```
-#删除条件以数组方式或字符串方式传参
+#删除条件以数组方式或字符串方式传参 
 $user = new User();
 $user->Delete(['id'=>1,'name'=>'ccc']); 
 ```
