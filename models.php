@@ -48,6 +48,7 @@ class models extends ActiveRecord implements \ArrayAccess{
     /**
      * @param offset
      */
+    #[\ReturnTypeWillChange]
     public function offsetExists ($offset) {
         return isset($this->$offset);
     }
@@ -55,14 +56,16 @@ class models extends ActiveRecord implements \ArrayAccess{
     /**
      * @param offset
      */
+    #[\ReturnTypeWillChange]
     public function offsetGet ($offset) {
-        return $offset;
+        return $this->$offset;
     }
     
     /**
      * @param offset
      * @param value
      */
+    #[\ReturnTypeWillChange]
     public function offsetSet ($offset, $value) {
        $this->$offset = $value;
     }
@@ -70,8 +73,9 @@ class models extends ActiveRecord implements \ArrayAccess{
     /**
      * @param offset
      */
+    #[\ReturnTypeWillChange]
     public function offsetUnset ($offset) {
-        $this->$offset = null;
+        unset($this->_ar[$offset]);
     }
     
     

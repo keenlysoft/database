@@ -5,7 +5,7 @@ use keenly\config;
 use keenly\Exception\dbException;
 use keenly\common;
 use keenly\exception\KeenlyException;
-define('ISCLI', PHP_SAPI === 'cli');
+defined('ISCLI') || define('ISCLI', PHP_SAPI === 'cli');
 
 
 
@@ -50,10 +50,10 @@ class pdoBuilder{
     
     public static  function connectionSql($dbName = null,$reboot = FALSE){
         if($reboot){
-           self::$instance = false;
+           self::$instance = null;
        }
        if(ISCLI && self::$tempLike && !self::pdo_ping(self::$tempLike)){
-           self::$instance = false;
+           self::$instance = null;
        }
        if(!self::$instance instanceof self){
            self::$instance = new static($dbName); 
@@ -70,8 +70,8 @@ class pdoBuilder{
        }else{
            $db = $this->connectStr[empty($dbName)?self::$databaseName:$dbName];
        }
-       $this->dns = strstr($db, DIRECTORY_SEPARATOR,true);
-       $data = substr(strstr($db, DIRECTORY_SEPARATOR),CRYPT_EXT_DES);
+	       $this->dns = strstr($db, DIRECTORY_SEPARATOR, true);
+	       $data = ltrim(strstr($db, DIRECTORY_SEPARATOR), DIRECTORY_SEPARATOR);
        parse_str($data,$this->db);
        return $this;
     }
@@ -149,7 +149,7 @@ class pdoBuilder{
             
             return $this->dbh;
         }catch (\PDOException $e){
-            die ("Error!:Unable to connect " . $e->getMessage() . "<br/>");
+            throw new \RuntimeException('Unable to connect to the configured database.', 0, $e);
         }
     }                                                        
 

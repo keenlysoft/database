@@ -57,7 +57,6 @@ class base extends abstractPdo
             $this->ilink = $this->dh->query($sql);
             return $this;
         } catch (\PDOException $e) {
-            var_export($sql);
             throw new dbException($e, $e->getCode());
         }
     }

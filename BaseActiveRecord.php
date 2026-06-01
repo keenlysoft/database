@@ -34,12 +34,15 @@ class BaseActiveRecord {
     
     private function Inseter($Table){
         $this->_paramssql = "insert into ".$Table.' ';
+        $this->intStr = '';
+        $this->valueStr = '';
         return $this;
     }
    
     
     private function Updatesql($Table){
         $this->upSql = "UPDATE ".$Table.' ';
+        $this->setSql = ' SET ';
         return $this;
     }
     
@@ -82,8 +85,9 @@ class BaseActiveRecord {
     //desoUpdateSql func is not Prepared statements
     private function desoUpdateSql($ar){
         if(is_array($ar) && count($ar) >= 1){
+            $lastField = array_key_last($ar);
             foreach ($ar as $filed => $name){
-                if($filed ==  end($ar)){
+                if($filed == $lastField){
                     $this->setSql .= $filed.' = '.$name;
                 }else{
                     $this->setSql .= $filed.' = '.$name.$this->judgeCount($ar);

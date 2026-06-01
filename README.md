@@ -1,111 +1,109 @@
-如何使用Keenly database ORM 目前只支持mysql 连接库
-# 查找
-##### 一个简单的查找
-```php
-model::find(['id'])->where(['name'=>'keenly'])->one(); #获取一条数据
+# Keenly Database
+
+`keenlysoft/database` is the database and active record package for the [Keenly lightweight PHP framework](https://github.com/keenlysoft/keenly). It provides a small MySQL-oriented query layer, active record helpers, pagination, and an optional Redis wrapper.
+
+## Features
+
+- Active record models for common create, read, update, and delete operations
+- Prepared query helpers through `pwhere()`
+- Transaction helpers
+- Pagination support
+- Optional Redis connection wrapper
+- PHP 7.4 and PHP 8.x compatibility baseline
+
+## Requirements
+
+- PHP 7.4 or later
+- PDO and the PDO driver for your database
+- The BCMath extension when using pagination
+- The Redis extension when using the Redis wrapper
+- `keenlysoft/keenly` when using framework configuration integration
+
+## Installation
+
+Install the package with Composer:
+
+```bash
+composer require keenlysoft/database
 ```
-```php
-model::find(['id'])->where(['name'=>'keenly'])->all(); #获取多条数据
-```
-keenly database 返回结果集以数组方式返回
-##### 介绍条件语句
-|  方法 |  使用 |描述|
-| ------------ | ------------ |------------|
-| inwhere  |  inwhere('filed',['q','b']) |参数1：字段，参数2：数组或者字符串|
-| pwhere|pwhere(['id'=>'100','name'=>'ssc']) |参数1：数组|
-|pwhere|pwhere('<',['id'=>'100','name'=>'ssc'])|参数1：运算符，参数2：数组|
-|pwhere|pwhere(">",['id'=>'100','name'=>'ssc'],'and')|参数1：运算符，参数2：数组,参数3：and or |
-|likeWhere|likewhere('field','name','a')|left = l , right = r , all = a|
-# 更新
-```php
-$user = new user();
-$user->Update($data,$where,flase); #更新数据 
-```
-| 参数1  |参数2   |参数3|
-| ------------ | ------------ | ------------ |
-|更新值   | 条件语句 |如果是true 表示预处理语句更新 false 非预处理语句更新数据|
+
+Applications created with [`keenlysoft/app`](https://github.com/keenlysoft/app) include this package automatically.
+
+## Quick Start
+
+Define an application model:
 
 ```php
-# 使用主键值更新
-$user = new user($id);
-$user->name = 'jack_yang';
-$user->save();
+<?php
+
+namespace models;
+
+class User extends \database\models
+{
+    public $table = 'users';
+}
 ```
-# 添加
-```php
-$user = new user();
-$user->add($data); #添加数据 
-```
-| 参数1 
-| ------------ |
-|['name'=>'yang','age'=>18| 
+
+Find records:
 
 ```php
-#使用AR添加 预处理模式
-$user = new user();
-$user->name = 'jack_yang';
-$user->save();
+$user = User::find('*')->where(['id' => 1])->one();
+$users = User::find(['id', 'name'])->pwhere(['status' => 'active'])->all();
 ```
-# 删除
-```
-#删除条件以数组方式或字符串方式传参 
+
+Create, update, and delete records:
+
+```php
 $user = new User();
-$user->Delete(['id'=>1,'name'=>'ccc']); 
+$user->name = 'Ada';
+$user->save();
+
+$user->Update(['name' => 'Grace'], ['id' => 1]);
+$user->Delete(['id' => 1]);
 ```
 
+Use transactions:
 
-# 返回SQL
 ```php
-model::find(['id'])->where(['name'=>'keenly'])->all(false) #all()或者 one()参数为FALSE
-```
-
-# 求总数
-```php
-model::find('id')->where(['name'=>'keenly'])->count(); # 返回结果 int 整数
-```
-# 判断是否存在
-```php
-model::find('id')->where(['name'=>'keenly'])->exist(); #返回结果 bool
-```
-# 判断是否存在
-```php
-model::find('id')->where(['name'=>'keenly'])->exist(); #返回结果 bool
-```
-# 返回 top 10
-```php
-model::find('id')->where(['name'=>'keenly'])->top(10); #返回数组 
-```
-# 计数器
-```php
-user::UpdateCounter(['name'=>2],['id'=>2]); ##参数1 字段=>2 or -2 参数2：where 语句
-```
-# 切换数据库
-```php
-User::SwitchDB('test'); # test 是database 配置里面连接的数据库名称
-$user = User::find()->where([])->all();
-User::InitDB();
-```
-
-# 事务
-### 开启事务
-```
-$user = new user;
+$user = new User();
 $user->begin();
 
+try {
+    // Perform database operations.
+    $user->commit();
+} catch (\Throwable $exception) {
+    $user->back();
+    throw $exception;
+}
 ```
-### 检查是否在一个事务内
-```
-$user = new user;
-$user->InTransaction();
 
+## Security Notes
+
+Prefer prepared operations such as `pwhere()` when values originate from users or external systems. Methods that accept raw SQL fragments are intended for trusted application code only.
+
+Store production database and Redis credentials outside version control. Review generated configuration before deployment.
+
+## Testing
+
+Run the local smoke test:
+
+```bash
+composer test
 ```
-### 提交事务
-```
-$user = new user;
-$user->commit();
-```
-### 回滚事务
-```
-$user = new user;
-$user->back();
-```
+
+The smoke test does not require a live database server. It verifies SQL generation and model array access behavior.
+
+## Roadmap
+
+- Expand prepared-query coverage across the full active record API
+- Add integration tests against a disposable MySQL service
+- Review Redis extension compatibility and failure handling
+- Add static analysis and coding-style checks
+
+## Contributing
+
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md), follow the [Code of Conduct](CODE_OF_CONDUCT.md), and report security issues according to [SECURITY.md](SECURITY.md).
+
+## License
+
+Keenly Database is released under the [MIT License](LICENSE).

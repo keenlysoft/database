@@ -39,7 +39,9 @@ class redis extends  \Redis{
         }else{
             $this->content($this->config['host'],$this->config['port'],$this->config['timeout'],null,$this->config['rebinding']);
         }
-        $this->redis->auth($this->config['password']);
+        if (!empty($this->config['password'])) {
+            $this->redis->auth($this->config['password']);
+        }
         return $this->redis;
     }
     

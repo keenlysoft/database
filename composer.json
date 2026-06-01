@@ -1,6 +1,6 @@
 {
 	"name" : "keenlysoft/database",
-	"description" : "database is keen Framework core file",
+	"description" : "Database and active record package for the Keenly lightweight PHP framework",
 	"authors" : [{
 			"name" : "brain_yang",
 			"email" : "463247339@qq.com"
@@ -11,19 +11,26 @@
 	"minimum-stability" : "dev",
 	"keywords" : [
 		"keenly",
-		"keenly database"
+		"database",
+		"active-record",
+		"orm"
 	],
 	"require" : {
-		"php" : "^7.0"
+		"php" : ">=7.4 <9.0"
 	},
 	"autoload" : {
 		"psr-4" : {
 			"database\\" : ""
 		}
 	},
-	"type" : "composer",
-	"url" : "http://packagist.phpcomposer.com",
+	"type" : "library",
+	"homepage" : "https://github.com/keenlysoft/database",
+	"scripts" : {
+		"test" : "php tests/smoke.php"
+	},
 	"support" : {
-		"email" : "qiaopi520@qq.com"
+		"email" : "qiaopi520@qq.com",
+		"issues" : "https://github.com/keenlysoft/database/issues",
+		"source" : "https://github.com/keenlysoft/database"
 	}
 }
