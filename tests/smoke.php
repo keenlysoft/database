@@ -45,20 +45,32 @@ assertSame(
     'Insert SQL should use placeholders.'
 );
 assertSame(
-    'UPDATE users  SET name = :name , email = :email WHERE `id` = \'7\'',
+    'UPDATE users  SET `name` = :name , `email` = :email WHERE `id` = \'7\'',
     $builder->update('users', array('name' => 'Ada', 'email' => 'ada@example.test'), array('id' => 7)),
     'Prepared update SQL should contain each field once.'
 );
 assertSame(
-    'UPDATE users  SET name = :name WHERE `id` = \'8\'',
+    'UPDATE users  SET `name` = :name WHERE `id` = \'8\'',
     $builder->update('users', array('name' => 'Grace'), array('id' => 8)),
     'Repeated updates should reset SQL builder state.'
+);
+assertSame(
+    'UPDATE users  SET `name` = :name WHERE `name` = \'O\'\'Reilly\'',
+    $builder->update('users', array('name' => 'Grace'), array('name' => "O'Reilly")),
+    'Where values should be escaped.'
 );
 assertSame(
     'DELETE FROM users  WHERE `id` = \'9\'',
     $builder->deleteWhere('users', array('id' => 9)),
     'Delete SQL should include the where clause.'
 );
+
+try {
+    $builder->update('users', array('name;drop' => 'Ada'), array('id' => 1));
+    fail('Invalid SQL identifiers should be rejected.');
+} catch (\InvalidArgumentException $e) {
+    assertSame('Invalid SQL identifier.', $e->getMessage(), 'Invalid identifier message should be stable.');
+}
 
 $model = new \database\models();
 $model['name'] = 'Ada';

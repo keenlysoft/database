@@ -62,6 +62,11 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface
         $this->arWhere = '';
         $this->pWhere = '';
         $this->sqlstr = '';
+        $this->_pstr = '';
+        $this->_pval = [];
+        $this->isPretreatment = false;
+        $this->isAr = false;
+        $this->find = false;
     }
 
     /**
@@ -197,15 +202,17 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface
             $this->arWhere = $this->arWhere . ' and ';
         }
         $this->find = true;
+        $field = $this->quoteIdentifier($field);
+        $key = $this->quoteLikeValue($key);
         switch ($around) {
             case 'a':
-                $this->arWhere .= " `$field` like('%$key%')";
+                $this->arWhere .= " $field like('%$key%')";
                 break;
             case 'r':
-                $this->arWhere .= " `$field` like('%$key')";
+                $this->arWhere .= " $field like('%$key')";
                 break;
             case 'l':
-                $this->arWhere .= " `$field` like('$key%')";
+                $this->arWhere .= " $field like('$key%')";
                 break;
         }
         return $this;
@@ -219,6 +226,8 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface
      */
     public function limit($m, $n = 0)
     {
+        $m = $this->normalizeNonNegativeInteger($m, 'limit');
+        $n = $this->normalizeNonNegativeInteger($n, 'offset');
         if ($n == 0) {
             $this->arWhere .= " limit $m";
         } else {
@@ -235,6 +244,7 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface
      */
     public function offset($n)
     {
+        $n = $this->normalizeNonNegativeInteger($n, 'offset');
         $this->arWhere .= " offset $n";
         return $this;
     }
@@ -247,7 +257,7 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface
      */
     public function orderBy($firldsort)
     {
-        $this->arWhere .= " ORDER BY $firldsort ";
+        $this->arWhere .= " ORDER BY ".$this->formatOrderBy($firldsort)." ";
         return $this;
     }
 
@@ -256,7 +266,7 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface
      */
     public function groupBy($by)
     {
-        $this->arWhere .= " GROUP BY $by";
+        $this->arWhere .= " GROUP BY ".$this->formatIdentifierList($by);
         return $this;
     }
 
@@ -268,15 +278,16 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface
         $this->find = true;
         if (2 == func_num_args()) {
             $change = function ($str) {
-                return sprintf("'%s'", $str);
+                return $this->quoteSqlLiteral($str);
             };
             $filed = func_get_arg(0);
+            $filed = $this->quoteIdentifier($filed);
             $getArgs = func_get_arg(1);
             if (is_array($getArgs)) {
                 $indata = implode(",", array_map($change, $getArgs));
-                $sql = "`$filed` in ({$indata})";
+                $sql = "$filed in ({$indata})";
             } else {
-                $sql = "`$filed` in ({$getArgs})";
+                $sql = "$filed in ({$getArgs})";
             }
             $this->arWhere .= $sql;
         }
@@ -292,12 +303,14 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface
             $Prepare = '';
             $prepareArray = [];
             foreach ($params as $field => $pval) {
+                $quotedField = $this->quoteIdentifier($field);
+                $placeholder = ':'.$this->placeholderName($field);
                 if ($this->endkey($params) == $field) {
-                    $Prepare .= $field . ' ' . $operator . ' :' . $field;
+                    $Prepare .= $quotedField . ' ' . $operator . ' ' . $placeholder;
                 } else {
-                    $Prepare .= $field . ' ' . $operator . ' :' . $field . $this->judgeCount($params, " $bit ");
+                    $Prepare .= $quotedField . ' ' . $operator . ' ' . $placeholder . $this->judgeCount($params, " $bit ");
                 }
-                $prepareArray[":" . $field] = $pval;
+                $prepareArray[$placeholder] = $pval;
             }
             $this->isPretreatment = true;
             $this->_pstr .= empty($this->_pstr) ? $Prepare : $bit . $Prepare;
@@ -320,7 +333,7 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface
     {
         $sql = $this->dealInsertSQL($this->GetTable(), $data);
         $phl = $this->dbh->prepare($sql);
-        $phl->execute($this->_ar);
+        $phl->execute($data);
         $this->initialize();
         return $this->ResultId();
     }
@@ -382,9 +395,9 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface
         if (is_array($params)) {
             foreach ($params as $name => $value) {
                 if ($this->endkey($params) == $name) {
-                    $sql .= '`' . $name . "` {$operator} " . $this->dbh->quote($value);
+                    $sql .= $this->quoteIdentifier($name) . " {$operator} " . $this->dbh->quote($value);
                 } else {
-                    $sql .= '`' . $name . "` {$operator} " . $this->dbh->quote($value) . $this->judgeCount($params, " $bit ");
+                    $sql .= $this->quoteIdentifier($name) . " {$operator} " . $this->dbh->quote($value) . $this->judgeCount($params, " $bit ");
                 }
             }
             $this->arWhere .= empty($this->arWhere) ? $sql : $bit . $sql;
@@ -547,6 +560,9 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface
         $this->_pstr = '';
         $this->_ar = '';
         $this->select = '';
+        $this->isPretreatment = false;
+        $this->isAr = false;
+        $this->find = false;
     }
 
     // 打印预处理sql
@@ -577,6 +593,45 @@ class ActiveRecord extends BaseActiveRecord implements ActiveRecordInterface
                 return $this->select . (empty($this->arWhere) ? '' : ' WHERE ') . $this->arWhere;
             }
         }
+    }
+
+    private function quoteLikeValue($value)
+    {
+        return str_replace(["\\", "'", "%", "_"], ["\\\\", "''", "\\%", "\\_"], (string) $value);
+    }
+
+    private function normalizeNonNegativeInteger($value, $name)
+    {
+        if (!is_int($value) && !ctype_digit((string) $value)) {
+            throw new \InvalidArgumentException("Invalid SQL $name value.");
+        }
+        $value = (int) $value;
+        if ($value < 0) {
+            throw new \InvalidArgumentException("Invalid SQL $name value.");
+        }
+        return $value;
+    }
+
+    private function formatOrderBy($orderBy)
+    {
+        $parts = array_map('trim', explode(',', (string) $orderBy));
+        $formatted = [];
+        foreach ($parts as $part) {
+            if (!preg_match('/^([A-Za-z_][A-Za-z0-9_]*)(?:\s+(ASC|DESC))?$/i', $part, $matches)) {
+                throw new \InvalidArgumentException('Invalid SQL order by clause.');
+            }
+            $direction = isset($matches[2]) ? ' '.strtoupper($matches[2]) : '';
+            $formatted[] = $this->quoteIdentifier($matches[1]).$direction;
+        }
+        return implode(', ', $formatted);
+    }
+
+    private function formatIdentifierList($fields)
+    {
+        $parts = array_map('trim', explode(',', (string) $fields));
+        return implode(', ', array_map(function ($field) {
+            return $this->quoteIdentifier($field);
+        }, $parts));
     }
 
     public function __call($func, $args)

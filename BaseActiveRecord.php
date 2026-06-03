@@ -55,10 +55,10 @@ class BaseActiveRecord {
         if(is_array($ar) && count($ar) >= 1){
            $key = array_keys($ar);
            $this->intStr = implode(",", array_map(function ($v){
-               return "`$v`"; 
+               return $this->quoteIdentifier($v);
            }, $key));
            $this->valueStr = implode(",", array_map(function ($v){
-                    return ':'.$v;
+                    return ':'.$this->placeholderName($v);
                     },$key
            ));
         }
@@ -70,9 +70,9 @@ class BaseActiveRecord {
             $key = array_keys($ar);
             foreach ($key as $filed){
                 if($filed ==  end($key)){
-                    $this->setSql .= $filed.' = :'.$filed;
+                    $this->setSql .= $this->quoteIdentifier($filed).' = :'.$this->placeholderName($filed);
                 }else{
-                    $this->setSql .= $filed.' = :'.$filed.$this->judgeCount($ar);
+                    $this->setSql .= $this->quoteIdentifier($filed).' = :'.$this->placeholderName($filed).$this->judgeCount($ar);
                 }
             }
         }else{
@@ -88,9 +88,9 @@ class BaseActiveRecord {
             $lastField = array_key_last($ar);
             foreach ($ar as $filed => $name){
                 if($filed == $lastField){
-                    $this->setSql .= $filed.' = '.$name;
+                    $this->setSql .= $this->quoteIdentifier($filed).' = '.$this->quoteSqlLiteral($name);
                 }else{
-                    $this->setSql .= $filed.' = '.$name.$this->judgeCount($ar);
+                    $this->setSql .= $this->quoteIdentifier($filed).' = '.$this->quoteSqlLiteral($name).$this->judgeCount($ar);
                 }
             }
         }else{
@@ -129,9 +129,9 @@ class BaseActiveRecord {
             $where = '';
             foreach ($w as $f => $v){
                 if($this->endkey($w) == $f){
-                    $where .= "`$f`".' = '."'$v'";
+                    $where .= $this->quoteIdentifier($f).' = '.$this->quoteSqlLiteral($v);
                 }else{
-                    $where .= "`$f`".' = '."'$v'".$this->judgeCount($w,' AND ');
+                    $where .= $this->quoteIdentifier($f).' = '.$this->quoteSqlLiteral($v).$this->judgeCount($w,' AND ');
                 }
             }
             return ' WHERE '.$where;
@@ -165,6 +165,33 @@ class BaseActiveRecord {
      */
     protected function judgeCount( $num , $seg = ' , '){
         return count($num) > 1 ? $seg : '';
+    }
+
+    protected function quoteIdentifier($identifier)
+    {
+        if (!is_string($identifier) || !preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $identifier)) {
+            throw new \InvalidArgumentException('Invalid SQL identifier.');
+        }
+        return '`'.$identifier.'`';
+    }
+
+    protected function placeholderName($identifier)
+    {
+        if (!is_string($identifier) || !preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $identifier)) {
+            throw new \InvalidArgumentException('Invalid SQL placeholder.');
+        }
+        return $identifier;
+    }
+
+    protected function quoteSqlLiteral($value)
+    {
+        if ($value === null) {
+            return 'NULL';
+        }
+        if (is_bool($value)) {
+            return $value ? "'1'" : "'0'";
+        }
+        return "'".str_replace("'", "''", (string) $value)."'";
     }
     
     
